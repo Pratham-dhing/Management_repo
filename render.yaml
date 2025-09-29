@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: market-intelligence
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: starter
+    region: oregan
+    buildCommand: ""
+    startCommand: "node server.js"
+    envVars:
+      - key: PRIMARY_DATA_PROVIDER
+        value: alphavantage
+      - key: ALPHAVANTAGE_API_KEY
+        value: ""

@@ -1,0 +1,172 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Market Intelligence — Final Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div style="max-width:900px;margin:12px auto;padding:12px;">
+  <input id="symbol" placeholder="Symbol (e.g., AAPL, NSE:RELIANCE)" style="padding:8px 10px;font-size:16px"/>
+  <button id="fetch" style="padding:8px 10px;font-size:16px">Fetch</button>
+  <div id="output" aria-live="polite" style="margin-top:12px;white-space:pre-wrap;"></div>
+</div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo-wrap" aria-hidden="true">
+        <svg width="56" height="56" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1">
+              <stop offset="0" stop-color="#0ef2c9"/>
+              <stop offset="1" stop-color="#18a0ff"/>
+            </linearGradient>
+          </defs>
+          <rect width="120" height="120" rx="18" fill="#071827"></rect>
+          <text x="12" y="86" font-family="Inter, sans-serif" font-weight="800" font-size="72" fill="url(#g1)">MI</text>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>Market Intelligence</h1>
+        <p class="tag">Final Demo — Stocks, Forex, News & Predictions</p>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button id="btn-market" class="nav-btn active">Market</button>
+      <button id="btn-portfolio" class="nav-btn">Portfolio</button>
+      <button id="btn-news" class="nav-btn">News & Sentiment</button>
+      <button id="btn-pred" class="nav-btn">Predictions</button>
+      <button id="btn-about" class="nav-btn">About</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- MARKET -->
+    <section id="market-view" class="panel">
+      <div class="market-left card">
+        <div class="controls-row">
+          <input id="stock-search" placeholder="Search symbol or name e.g. RELIANCE" />
+          <select id="filterType"><option value="all">All</option><option value="stock">Stocks</option><option value="forex">Forex</option></select>
+        </div>
+        <div class="market-categories">
+          <button class="cat-btn active" data-cat="all">All</button>
+          <button class="cat-btn" data-cat="stock">Indian Stocks</button>
+          <button class="cat-btn" data-cat="forex">Forex Pairs</button>
+        </div>
+        <div class="stock-list" id="stock-list"></div>
+      </div>
+
+      <div class="market-right card">
+        <div class="header-row">
+          <div>
+            <h3 id="selectedSymbol">Select an instrument</h3>
+            <div id="selectedName" class="muted">—</div>
+          </div>
+          <div class="account-balance">Demo Balance: <strong id="demoBalance">₹ 200,000</strong></div>
+        </div>
+
+        <div class="price-row">
+          <div class="price-current" id="priceCurrent">—</div>
+          <div class="price-change" id="priceChange">—</div>
+        </div>
+
+        <div class="signal-row">
+          <div id="predSignal" class="signal hold">HOLD</div>
+          <div id="signalExplanation" class="muted small">Combined signal appears here.</div>
+        </div>
+
+        <canvas id="priceChart" height="260"></canvas>
+
+        <div class="trade-controls">
+          <div class="trade-left">
+            <label>Action</label>
+            <select id="tradeAction"><option value="buy">Buy</option><option value="sell">Sell</option></select>
+          </div>
+          <div class="trade-mid">
+            <label>Quantity</label>
+            <input id="tradeQty" type="number" min="1" value="1" />
+          </div>
+          <div class="trade-right">
+            <label>&nbsp;</label>
+            <button id="tradeBtn" class="primary">Execute</button>
+          </div>
+        </div>
+        <div class="note muted">Demo environment. Prices simulated unless you enable a real API proxy.</div>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section id="portfolio-view" class="panel hidden">
+      <div class="card">
+        <h2>Portfolio</h2>
+        <div class="portfolio-summary">
+          <div>Cash: <strong id="cashBalance">₹ 0</strong></div>
+          <div>Market Value: <strong id="portfolioValue">₹ 0</strong></div>
+          <div>Total P/L: <strong id="totalPL">₹ 0</strong></div>
+        </div>
+
+        <table class="portfolio-table">
+          <thead><tr><th>Instrument</th><th>Qty</th><th>Avg Price</th><th>Market Price</th><th>Value</th><th>P/L</th></tr></thead>
+          <tbody id="portfolioRows"></tbody>
+        </table>
+
+        <h3>Transaction History</h3>
+        <table class="tx-table">
+          <thead><tr><th>Date</th><th>Action</th><th>Ins.</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+          <tbody id="txRows"></tbody>
+        </table>
+
+        <div style="margin-top:12px">
+          <button id="resetBtn" class="secondary">Reset Demo Account</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section id="news-view" class="panel hidden">
+      <div class="card">
+        <h2>News & Sentiment</h2>
+        <div class="news-filters">
+          <label>Filter for selected instrument: <input type="checkbox" id="filterBySelected"></label>
+        </div>
+        <div id="newsList" class="news-list"></div>
+      </div>
+    </section>
+
+    <!-- PREDICTIONS -->
+    <section id="pred-view" class="panel hidden">
+      <div class="card">
+        <h2>Predictions</h2>
+        <div class="pred-tabs">
+          <button class="pred-btn active" data-mode="short">Short-term (Indicators)</button>
+          <button class="pred-btn" data-mode="news">News-based</button>
+          <button class="pred-btn" data-mode="long">Long-term (Pairs & Indicators)</button>
+        </div>
+
+        <div id="predContent" class="pred-content">
+          <!-- content populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about-view" class="panel hidden">
+      <div class="card">
+        <h2>About Market Intelligence</h2>
+        <p>Final demo with Market, Portfolio, News & Sentiment, Prediction modes (short/long/news) and Buy/Sell markers.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">Market Intelligence • Demo • Final</footer>
+  <script src="app.js"></script>
+<div style="max-width:800px;margin:16px auto;"><canvas id="chart" height="200"></canvas>
+<div style="height:16px"></div>
+<canvas id="equityChart" height="200"></canvas></div>
+</body>
+</html>
